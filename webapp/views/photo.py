@@ -1,10 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render, get_object_or_404
 from webapp.models import Photo
 from webapp.forms import PhotoForm
 from django.http import Http404
+import uuid
+from django.contrib.auth.decorators import login_required
+
 
 
 class PhotoListView(ListView):
@@ -78,3 +81,23 @@ class PhotoDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         if self.object.album:
             return reverse_lazy("webapp:album_detail", kwargs={"pk": self.object.album.pk})
         return reverse_lazy("webapp:photo_list")
+
+
+@login_required
+def generate_photo_link(request, pk):
+    photo = get_object_or_404(Photo, pk=pk)
+    if request.user != photo.author:
+        raise Http404("Фотография не найдена")
+    if photo.access_token:
+        return redirect('webapp:photo_detail', pk=pk)
+    photo.access_token = str(uuid.uuid4())
+    photo.save()
+    return redirect('webapp:photo_detail', pk=pk)
+
+
+def photo_by_token(request, token):
+    try:
+        photo = Photo.objects.get(access_token=token)
+        return render(request, 'photo/photo_shared.html', {'photo': photo})
+    except Photo.DoesNotExist:
+        raise Http404("Фотография не найдена или ссылка недействительна")

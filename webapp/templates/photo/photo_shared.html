@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="text-align: center;">
+    <div style="background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h3> Общая фотография</h3>
+        <p>Этой фотографией с вами поделился пользователь</p>
+    </div>
+
+    <h2>{{ photo.caption }}</h2>
+    <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+
+    <div style="margin: 20px 0;">
+        <p><strong>Автор:</strong> {{ photo.author.first_name|default:photo.author.username }}</p>
+        <p><strong>Дата:</strong> {{ photo.created_at|date:"d.m.Y H:i" }}</p>
+        {% if photo.album %}
+            <p><strong>Из альбома:</strong> {{ photo.album.title }}</p>
+        {% endif %}
+        <p><strong>Лайков:</strong>  {{ photo.favorites_count }}</p>
+    </div>
+
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 30px;">
+        <p><strong>Хотите создать свою галерею?</strong></p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" style="display: inline-block; padding: 8px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 3px; margin: 5px;">
+                Войти
+            </a>
+            <a href="{% url 'register' %}" style="display: inline-block; padding: 8px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 3px; margin: 5px;">
+                Регистрация
+            </a>
+        {% else %}
+            <a href="{% url 'webapp:photo_list' %}" style="display: inline-block; padding: 8px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 3px;">
+                Перейти в галерею
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

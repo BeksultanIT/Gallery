@@ -1,2 +1,2 @@
-from webapp.views.photo import PhotoListView, PhotoDetailView, PhotoCreateView, PhotoUpdateView, PhotoDeleteView
+from webapp.views.photo import PhotoListView, PhotoDetailView, PhotoCreateView, PhotoUpdateView, PhotoDeleteView, generate_photo_link, photo_by_token
 from webapp.views.album import AlbumDetailView, AlbumCreateView, AlbumUpdateView, AlbumDeleteView, TogglePhotoFavoriteView

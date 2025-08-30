@@ -27,6 +27,7 @@ class Photo(models.Model):
     album = models.ForeignKey(Album,null=True,blank=True,on_delete=models.CASCADE,related_name='photos')
     is_public = models.BooleanField(default=True)
     favorited_by = models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='favorite_photos')
+    access_token = models.CharField(max_length=100, blank=True, null=True, unique=True, verbose_name="Токен доступа")
 
 
     def __str__(self):

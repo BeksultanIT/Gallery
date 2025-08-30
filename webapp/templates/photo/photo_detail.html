@@ -20,7 +20,7 @@
                     <button id="add-photo-{{ photo.id }}"
                             onclick="addPhotoToFavorites({{ photo.id }})"
                             style="display: none; padding: 8px 15px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer;">
-                         Добавить в избранное
+                        Добавить в избранное
                     </button>
                     <button id="remove-photo-{{ photo.id }}"
                             onclick="removePhotoFromFavorites({{ photo.id }})"
@@ -36,7 +36,7 @@
                     <button id="remove-photo-{{ photo.id }}"
                             onclick="removePhotoFromFavorites({{ photo.id }})"
                             style="display: none; padding: 8px 15px; background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 5px; cursor: pointer;">
-                        ★ Убрать из избранного
+                         Убрать из избранного
                     </button>
                 {% endif %}
             </div>
@@ -48,6 +48,28 @@
                 <a href="{% url 'webapp:photo_delete' photo.pk %}"
                    onclick="return confirm('Удалить фото?')"
                    style="margin-left: 10px; color: red;">Удалить</a>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                <h4>Поделиться фотографией</h4>
+                {% if photo.access_token %}
+                    <p>Ссылка для доступа к фотографии:</p>
+                    <div style="background-color: white; padding: 10px; border: 1px solid #ddd; border-radius: 3px; margin: 10px 0;">
+                        <input type="text"
+                               value="http://{{ request.get_host }}{% url 'webapp:photo_by_token' photo.access_token %}"
+                               readonly
+                               style="width: 100%; border: none; outline: none;"
+                               onclick="this.select()">
+                    </div>
+                    <small style="color: #666;">Скопируйте эту ссылку, чтобы поделиться фотографией</small>
+                {% else %}
+                    <p>Создайте ссылку для доступа к фотографии (можно поделиться с другими пользователями):</p>
+                    <a href="{% url 'webapp:generate_photo_link' photo.pk %}"
+                       style="display: inline-block; padding: 8px 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 3px;">
+                        Создать ссылку
+                    </a>
+                    <br><small style="color: #666;">Ссылка создается один раз и не может быть изменена</small>
+                {% endif %}
             </div>
         {% endif %}
     {% endif %}
