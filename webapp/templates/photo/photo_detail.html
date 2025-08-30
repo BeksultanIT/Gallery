@@ -10,28 +10,45 @@
         {% if photo.album %}
             <p><strong>Альбом:</strong> <a href="{% url 'webapp:album_detail' photo.album.pk %}">{{ photo.album.title }}</a></p>
         {% endif %}
-        <p><strong>Лайков:</strong> {{ photo.favorites_count }}</p>
+        <p><strong>Лайков:</strong>  <span id="photo-count-{{ photo.id }}">{{ photo.favorites_count }}</span></p>
     </div>
 
     {% if user.is_authenticated %}
         {% if photo.is_public %}
-            <form method="POST" action="{% url 'webapp:photo_fav_toggle' photo.pk %}" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit">
-                    {% if user in photo.favorited_by.all %}
-                        Убрать из избранного
-                    {% else %}
-                        Добавить в избранное
-                    {% endif %}
-                </button>
-            </form>
+            <div style="margin: 10px 0;">
+                {% if user in photo.favorited_by.all %}
+                    <button id="add-photo-{{ photo.id }}"
+                            onclick="addPhotoToFavorites({{ photo.id }})"
+                            style="display: none; padding: 8px 15px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer;">
+                         Добавить в избранное
+                    </button>
+                    <button id="remove-photo-{{ photo.id }}"
+                            onclick="removePhotoFromFavorites({{ photo.id }})"
+                            style="display: inline-block; padding: 8px 15px; background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 5px; cursor: pointer;">
+                         Убрать из избранного
+                    </button>
+                {% else %}
+                    <button id="add-photo-{{ photo.id }}"
+                            onclick="addPhotoToFavorites({{ photo.id }})"
+                            style="display: inline-block; padding: 8px 15px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; cursor: pointer;">
+                         Добавить в избранное
+                    </button>
+                    <button id="remove-photo-{{ photo.id }}"
+                            onclick="removePhotoFromFavorites({{ photo.id }})"
+                            style="display: none; padding: 8px 15px; background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 5px; cursor: pointer;">
+                        ★ Убрать из избранного
+                    </button>
+                {% endif %}
+            </div>
         {% endif %}
 
         {% if user == photo.author %}
-            <a href="{% url 'webapp:photo_edit' photo.pk %}" style="margin-left: 10px;">Редактировать</a>
-            <a href="{% url 'webapp:photo_delete' photo.pk %}"
-               onclick="return confirm('Удалить фото?')"
-               style="margin-left: 10px; color: red;">Удалить</a>
+            <div style="margin-top: 15px;">
+                <a href="{% url 'webapp:photo_edit' photo.pk %}" style="margin-left: 10px;">Редактировать</a>
+                <a href="{% url 'webapp:photo_delete' photo.pk %}"
+                   onclick="return confirm('Удалить фото?')"
+                   style="margin-left: 10px; color: red;">Удалить</a>
+            </div>
         {% endif %}
     {% endif %}
 </div>

@@ -20,8 +20,13 @@ from django.urls import path, include
 
 from gallery import settings
 
+api_urls = [
+    path('v1/', include('api_v1.urls')),
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('webapp.urls')),
     path('account/', include('account.urls')),
+    path('api/', include(api_urls)),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
