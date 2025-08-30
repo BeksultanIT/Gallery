@@ -2,7 +2,7 @@
 {% block content %}
 <div style="text-align: center;">
     <h2>{{ photo.caption }}</h2>
-    <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="max-width: 100%; height: auto;">
+    <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="width:200px; height:auto; border-radius:8px; object-fit:cover;">
 
     <div style="margin: 20px 0;">
         <p><strong>Автор:</strong> {{ photo.author.first_name|default:photo.author.username }}</p>

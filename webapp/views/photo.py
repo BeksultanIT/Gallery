@@ -17,16 +17,16 @@ class PhotoListView(ListView):
         return Photo.objects.filter(is_public=True).order_by('-created_at')
 
 
-class PhotoDetailView(DetailView):
+class PhotoDetailView(LoginRequiredMixin, DetailView):
     model = Photo
     template_name = 'photo/photo_detail.html'
     context_object_name = 'photo'
 
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if not obj.is_public and (not self.request.user.is_authenticated or self.request.user != obj.author):
+    def get_object(self):
+        photo = super().get_object()
+        if not photo.is_public and photo.author != self.request.user:
             raise Http404
-        return obj
+        return photo
 
 
 class PhotoCreateView(LoginRequiredMixin, CreateView):
@@ -50,14 +50,15 @@ class PhotoUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     form_class = PhotoForm
     template_name = 'form.html'
 
+    def test_func(self):
+        photo = self.get_object()
+        return (photo.author == self.request.user or
+                self.request.user.has_perm('webapp.can_edit_any_photo'))
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({'current_user': self.request.user})
         return kwargs
-
-    def test_func(self):
-        photo = self.get_object()
-        return photo.author == self.request.user
 
     def get_success_url(self):
         return reverse_lazy('webapp:photo_detail', kwargs={'pk': self.object.pk})
@@ -67,7 +68,8 @@ class PhotoDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         photo = self.get_object()
-        return photo.author == self.request.user
+        return (photo.author == self.request.user or
+                self.request.user.has_perm('webapp.can_delete_any_photo'))
 
     def get(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)

@@ -8,22 +8,24 @@ from webapp.forms import AlbumForm
 from django.http import Http404
 
 
-class AlbumDetailView(DetailView):
+class AlbumDetailView(LoginRequiredMixin, DetailView):
     model = Album
     template_name = 'album/album_detail.html'
     context_object_name = 'album'
 
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset)
-        if not obj.is_public and (not self.request.user.is_authenticated or self.request.user != obj.author):
+    def get_object(self):
+        album = super().get_object()
+        if not album.is_public and album.author != self.request.user:
             raise Http404
-        return obj
+        return album
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         photos = self.object.photos.filter(is_public=True).order_by('-created_at')
-        if self.request.user.is_authenticated and self.request.user == self.object.author:
+
+        if self.request.user == self.object.author:
             photos = self.object.photos.all().order_by('-created_at')
+
         paginator = Paginator(photos, 9)
         page = self.request.GET.get('page')
         ctx['photos_page'] = paginator.get_page(page)
@@ -36,7 +38,7 @@ class AlbumCreateView(LoginRequiredMixin, CreateView):
     template_name = 'form.html'
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # Исправлено
+        form.instance.author = self.request.user
         form.save()
         return redirect('webapp:album_detail', pk=form.instance.pk)
 

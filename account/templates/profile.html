@@ -15,7 +15,7 @@
 <div class="photo-grid">
     {% for photo in public_photos %}
         <div class="photo-item">
-            <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption }}"  style="width:200px; height:auto; border-radius:8px; object-fit:cover;">
         </div>
     {% empty %}
         <p>Нет публичных фото</p>

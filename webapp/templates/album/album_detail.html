@@ -23,7 +23,7 @@
     {% for photo in photos_page %}
         <div class="photo-item">
             <a href="{% url 'webapp:photo_detail' photo.pk %}">
-                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}"  style="width:200px; height:auto; border-radius:8px; object-fit:cover;">
             </a>
             <p>{{ photo.caption|truncatechars:30 }}</p>
         </div>
