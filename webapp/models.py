@@ -1,5 +1,4 @@
 from django.db import models
-from django.db import models
 from django.conf import settings
 
 
@@ -21,7 +20,7 @@ class Album(models.Model):
 
 
 class Photo(models.Model):
-    image = models.ImageField(upload_to='photos/%Y/%m/%d/')
+    image = models.ImageField(upload_to='photos/')
     caption = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='photos')

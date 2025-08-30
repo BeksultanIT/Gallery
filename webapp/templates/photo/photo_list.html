@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Фотографии</h1>
+<div class="photos">
+  {% for photo in photos %}
+    <div class="photo-card">
+      <a href="{% url 'webapp:photo_detail' photo.pk %}">
+        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="max-width:200px;">
+      </a>
+      <p>{{ photo.caption }}</p>
+      <p>Автор:
+        {% if user.is_authenticated %}
+          <a href="#">{{ photo.author.get_full_name }}</a>
+        {% else %}
+          {{ photo.author.get_full_name }}
+        {% endif %}
+      </p>
+      <p>Дата: {{ photo.created_at }}</p>
+      <p>Альбом:
+        {% if photo.album %}
+          {% if user.is_authenticated %}
+            <a href="{% url 'webapp:album_detail' photo.album.pk %}">{{ photo.album.title }}</a>
+          {% else %}
+            {{ photo.album.title }}
+          {% endif %}
+        {% else %}
+          — 
+        {% endif %}
+      </p>
+    </div>
+  {% empty %}
+    <p>Фотографий нет.</p>
+  {% endfor %}
+</div>
+
+<div class="pagination">
+  {% if photos.has_previous %}
+    <a href="?page={{ photos.previous_page_number }}">Prev</a>
+  {% endif %}
+  <span>Стр. {{ photos.number }} / {{ photos.paginator.num_pages }}</span>
+  {% if photos.has_next %}
+    <a href="?page={{ photos.next_page_number }}">Next</a>
+  {% endif %}
+</div>
+{% endblock %}

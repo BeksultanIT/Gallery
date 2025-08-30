@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ photo.caption }}</h1>
+<img src="{{ photo.image.url }}" alt="{{ photo.caption }}" >
+<p>Автор: <a href="#">{{ photo.author.get_full_name }}</a></p>
+<p>Дата: {{ photo.created_at }}</p>
+<p>Альбом: {% if photo.album %}<a href="{% url 'webapp:album_detail' photo.album.pk %}">{{ photo.album.title }}</a>{% endif %}</p>
+
+<h3>Кто добавил в избранное:</h3>
+<ul>
+  {% for u in photo.favorited_by.all %}
+    <li><a href="#">{{ u.get_full_name }}</a></li>
+  {% empty %}
+    <li>Никто</li>
+  {% endfor %}
+</ul>
+
+{% if user == photo.author %}
+  <p><a href="{% url 'webapp:photo_edit' photo.pk %}">Редактировать</a> | <a href="{% url 'webapp:photo_delete' photo.pk %}">Удалить</a></p>
+{% endif %}
+
+<form action="{% url 'webapp:photo_fav_toggle' photo.pk %}" method="post">
+  {% csrf_token %}
+  <button type="submit">
+    {% if user in photo.favorited_by.all %}Убрать из избранного{% else %}Добавить в избранное{% endif %}
+  </button>
+</form>
+
+{% endblock %}
