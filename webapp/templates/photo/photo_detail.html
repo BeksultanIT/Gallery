@@ -1,29 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ photo.caption }}</h1>
-<img src="{{ photo.image.url }}" alt="{{ photo.caption }}" >
-<p>Автор: <a href="#">{{ photo.author.get_full_name }}</a></p>
-<p>Дата: {{ photo.created_at }}</p>
-<p>Альбом: {% if photo.album %}<a href="{% url 'webapp:album_detail' photo.album.pk %}">{{ photo.album.title }}</a>{% endif %}</p>
+<div style="text-align: center;">
+    <h2>{{ photo.caption }}</h2>
+    <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="max-width: 100%; height: auto;">
 
-<h3>Кто добавил в избранное:</h3>
-<ul>
-  {% for u in photo.favorited_by.all %}
-    <li><a href="#">{{ u.get_full_name }}</a></li>
-  {% empty %}
-    <li>Никто</li>
-  {% endfor %}
-</ul>
+    <div style="margin: 20px 0;">
+        <p><strong>Автор:</strong> {{ photo.author.first_name|default:photo.author.username }}</p>
+        <p><strong>Дата:</strong> {{ photo.created_at|date:"d.m.Y H:i" }}</p>
+        {% if photo.album %}
+            <p><strong>Альбом:</strong> <a href="{% url 'webapp:album_detail' photo.album.pk %}">{{ photo.album.title }}</a></p>
+        {% endif %}
+        <p><strong>Лайков:</strong> {{ photo.favorites_count }}</p>
+    </div>
 
-{% if user == photo.author %}
-  <p><a href="{% url 'webapp:photo_edit' photo.pk %}">Редактировать</a> | <a href="{% url 'webapp:photo_delete' photo.pk %}">Удалить</a></p>
-{% endif %}
+    {% if user.is_authenticated %}
+        {% if photo.is_public %}
+            <form method="POST" action="{% url 'webapp:photo_fav_toggle' photo.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit">
+                    {% if user in photo.favorited_by.all %}
+                        Убрать из избранного
+                    {% else %}
+                        Добавить в избранное
+                    {% endif %}
+                </button>
+            </form>
+        {% endif %}
 
-<form action="{% url 'webapp:photo_fav_toggle' photo.pk %}" method="post">
-  {% csrf_token %}
-  <button type="submit">
-    {% if user in photo.favorited_by.all %}Убрать из избранного{% else %}Добавить в избранное{% endif %}
-  </button>
-</form>
+        {% if user == photo.author %}
+            <a href="{% url 'webapp:photo_edit' photo.pk %}" style="margin-left: 10px;">Редактировать</a>
+            <a href="{% url 'webapp:photo_delete' photo.pk %}"
+               onclick="return confirm('Удалить фото?')"
+               style="margin-left: 10px; color: red;">Удалить</a>
+        {% endif %}
+    {% endif %}
+</div>
 
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{% url 'webapp:photo_list' %}">← Вернуться к галерее</a>
+</div>
 {% endblock %}

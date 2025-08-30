@@ -1,14 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy, reverse
-from django.views.generic import  DetailView, CreateView, UpdateView, DeleteView, View
+from django.views.generic import DetailView, CreateView, UpdateView, DeleteView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.core.paginator import Paginator
 from webapp.models import Photo, Album
 from webapp.forms import AlbumForm
 from django.http import Http404
-
-
-
 
 
 class AlbumDetailView(DetailView):
@@ -25,6 +22,8 @@ class AlbumDetailView(DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         photos = self.object.photos.filter(is_public=True).order_by('-created_at')
+        if self.request.user.is_authenticated and self.request.user == self.object.author:
+            photos = self.object.photos.all().order_by('-created_at')
         paginator = Paginator(photos, 9)
         page = self.request.GET.get('page')
         ctx['photos_page'] = paginator.get_page(page)
@@ -37,8 +36,9 @@ class AlbumCreateView(LoginRequiredMixin, CreateView):
     template_name = 'form.html'
 
     def form_valid(self, form):
-        form.save(user=self.request.user)
-        return redirect('webapp:album_detail', pk=self.object.pk)
+        form.instance.author = self.request.user  # Исправлено
+        form.save()
+        return redirect('webapp:album_detail', pk=form.instance.pk)
 
 
 class AlbumUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -62,22 +62,23 @@ class AlbumUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class AlbumDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Album
-    success_url = reverse_lazy("album_list")
+    success_url = reverse_lazy("webapp:photo_list")
+
+    def test_func(self):
+        album = self.get_object()
+        return album.author == self.request.user
 
     def get(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
-
-
 
 
 class TogglePhotoFavoriteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         photo = get_object_or_404(Photo, pk=pk)
         if not photo.can_be_favorited():
-            return redirect(photo.get_absolute_url() if hasattr(photo, 'get_absolute_url') else 'gallery:photo_detail', pk=pk)
+            return redirect('webapp:photo_detail', pk=pk)
         if request.user in photo.favorited_by.all():
             photo.favorited_by.remove(request.user)
         else:
             photo.favorited_by.add(request.user)
-        return redirect(request.META.get('HTTP_REFERER', reverse('gallery:photo_detail', args=[pk])))
-
+        return redirect(request.META.get('HTTP_REFERER', reverse('webapp:photo_detail', args=[pk])))

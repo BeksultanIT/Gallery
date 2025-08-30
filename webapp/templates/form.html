@@ -1,10 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>{% if form.instance.pk %}Редактировать{% else %}Создать{% endif %}</h1>
-  <form method="post" enctype="multipart/form-data">
+<h2>
+    {% if object %}
+        Редактировать
+    {% else %}
+        Создать
+    {% endif %}
+</h2>
+
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Сохранить</button>
-  </form>
+</form>
 {% endblock %}
->

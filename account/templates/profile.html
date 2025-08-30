@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Профиль {{ profile_user.first_name }} {{ profile_user.last_name }}</h2>
+
+<h3>Публичные альбомы</h3>
+<ul class="album-list">
+    {% for album in public_albums %}
+        <li><a href="{% url 'webapp:album_detail' album.id %}">{{ album.title }}</a> - {{ album.description|truncatechars:50 }}</li>
+    {% empty %}
+        <li>Нет публичных альбомов</li>
+    {% endfor %}
+</ul>
+
+<h3>Публичные фото</h3>
+<div class="photo-grid">
+    {% for photo in public_photos %}
+        <div class="photo-item">
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+        </div>
+    {% empty %}
+        <p>Нет публичных фото</p>
+    {% endfor %}
+</div>
+
+{% if request.user == profile_user %}
+    <h3>Приватные альбомы</h3>
+    <ul class="album-list">
+        {% for album in private_albums %}
+            <li><a href="{% url 'webapp:album_detail' album.id %}">{{ album.title }}</a> - {{ album.description|truncatechars:50 }}</li>
+        {% empty %}
+            <li>Нет приватных альбомов</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Приватные фото</h3>
+    <div class="photo-grid">
+        {% for photo in private_photos %}
+            <div class="photo-item">
+                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+            </div>
+        {% empty %}
+            <p>Нет приватных фото</p>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

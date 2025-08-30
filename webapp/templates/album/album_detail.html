@@ -1,34 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ album.title }}</h1>
-<p>{{ album.description }}</p>
-<p>Автор: <a href="{% url 'profile' album.author.pk %}">{{ album.author.get_full_name }}</a></p>
-
-<h2>Фотографии в альбоме</h2>
 <div>
-  {% for photo in photos_page %}
-    <div>
-      <a href="{% url 'webapp:photo_detail' photo.pk %}">
-        <img src="{{ photo.image.url }}" >
-      </a>
-      <p>{{ photo.caption }}</p>
+    <h1>{{ album.title }}</h1>
+    <p><strong>Автор:</strong> {{ album.author.first_name|default:album.author.username }}</p>
+    <p><strong>Создан:</strong> {{ album.created_at|date:"d.m.Y" }}</p>
+    {% if album.description %}
+        <p><strong>Описание:</strong> {{ album.description }}</p>
+    {% endif %}
+
+    {% if user == album.author %}
+        <div style="margin: 20px 0;">
+            <a href="{% url 'webapp:album_edit' album.pk %}">Редактировать альбом</a>
+            <a href="{% url 'webapp:album_delete' album.pk %}"
+               onclick="return confirm('Удалить альбом и все его фото?')"
+               style="margin-left: 10px; color: red;">Удалить альбом</a>
+        </div>
+    {% endif %}
+</div>
+
+<h3>Фотографии в альбоме</h3>
+<div class="photo-grid">
+    {% for photo in photos_page %}
+        <div class="photo-item">
+            <a href="{% url 'webapp:photo_detail' photo.pk %}">
+                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}">
+            </a>
+            <p>{{ photo.caption|truncatechars:30 }}</p>
+        </div>
+    {% empty %}
+        <p>В альбоме пока нет фотографий.</p>
+    {% endfor %}
+</div>
+
+{% if photos_page.has_other_pages %}
+    <div class="pagination">
+        {% if photos_page.has_previous %}
+            <a href="?page=1">&laquo; первая</a>
+            <a href="?page={{ photos_page.previous_page_number }}">предыдущая</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ photos_page.number }} из {{ photos_page.paginator.num_pages }}
+        </span>
+
+        {% if photos_page.has_next %}
+            <a href="?page={{ photos_page.next_page_number }}">следующая</a>
+            <a href="?page={{ photos_page.paginator.num_pages }}">последняя &raquo;</a>
+        {% endif %}
     </div>
-  {% empty %}
-    <p>Публичных фотографий нет.</p>
-  {% endfor %}
-</div>
-
-<div>
-  {% if photos_page.has_previous %}
-    <a href="?page={{ photos_page.previous_page_number }}">Prev</a>
-  {% endif %}
-  <span>Стр. {{ photos_page.number }} / {{ photos_page.paginator.num_pages }}</span>
-  {% if photos_page.has_next %}
-    <a href="?page={{ photos_page.next_page_number }}">Next</a>
-  {% endif %}
-</div>
-
-{% if user == album.author %}
-  <p><a href="{% url 'webapp:album_edit' album.pk %}">Редактировать</a> | <a href="{% url 'webapp:album_delete' album.pk %}">Удалить</a></p>
 {% endif %}
+
+<div style="margin-top: 30px;">
+    <a href="{% url 'webapp:photo_list' %}">← Вернуться к галерее</a>
+</div>
 {% endblock %}

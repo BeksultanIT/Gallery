@@ -6,11 +6,13 @@ from webapp.models import Photo
 from webapp.forms import PhotoForm
 from django.http import Http404
 
+
 class PhotoListView(ListView):
     model = Photo
     template_name = 'photo/photo_list.html'
     context_object_name = 'photos'
-    paginate_by = 5
+    paginate_by = 12
+
     def get_queryset(self):
         return Photo.objects.filter(is_public=True).order_by('-created_at')
 
@@ -38,8 +40,9 @@ class PhotoCreateView(LoginRequiredMixin, CreateView):
         return kwargs
 
     def form_valid(self, form):
-        form.save(user=self.request.user)
-        return redirect('webapp:photo_list')
+        form.instance.author = self.request.user
+        form.save()
+        return redirect('webapp:photo_detail', pk=form.instance.pk)
 
 
 class PhotoUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -56,12 +59,20 @@ class PhotoUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         photo = self.get_object()
         return photo.author == self.request.user
 
+    def get_success_url(self):
+        return reverse_lazy('webapp:photo_detail', kwargs={'pk': self.object.pk})
 
 class PhotoDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Photo
+
+    def test_func(self):
+        photo = self.get_object()
+        return photo.author == self.request.user
 
     def get(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy("album_detail", kwargs={"pk": self.object.album.pk})
+        if self.object.album:
+            return reverse_lazy("webapp:album_detail", kwargs={"pk": self.object.album.pk})
+        return reverse_lazy("webapp:photo_list")

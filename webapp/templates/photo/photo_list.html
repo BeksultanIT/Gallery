@@ -1,45 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Фотографии</h1>
-<div class="photos">
-  {% for photo in photos %}
-    <div class="photo-card">
-      <a href="{% url 'webapp:photo_detail' photo.pk %}">
-        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="max-width:200px;">
-      </a>
-      <p>{{ photo.caption }}</p>
-      <p>Автор:
-        {% if user.is_authenticated %}
-          <a href="#">{{ photo.author.get_full_name }}</a>
-        {% else %}
-          {{ photo.author.get_full_name }}
-        {% endif %}
-      </p>
-      <p>Дата: {{ photo.created_at }}</p>
-      <p>Альбом:
-        {% if photo.album %}
-          {% if user.is_authenticated %}
-            <a href="{% url 'webapp:album_detail' photo.album.pk %}">{{ photo.album.title }}</a>
-          {% else %}
-            {{ photo.album.title }}
-          {% endif %}
-        {% else %}
-          — 
-        {% endif %}
-      </p>
-    </div>
-  {% empty %}
-    <p>Фотографий нет.</p>
-  {% endfor %}
+<h1>Галерея фотографий</h1>
+
+<div class="photo-grid">
+    {% for photo in photos %}
+        <div class="photo-item">
+            <a href="{% url 'webapp:photo_detail' photo.pk %}">
+                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" style="width:200px; height:auto; border-radius:8px; object-fit:cover;">
+            </a>
+            <p>{{ photo.caption|truncatechars:30 }}</p>
+            <small>{{ photo.author.first_name|default:photo.author.username }} | {{ photo.created_at|date:"d.m.Y" }}</small>
+        </div>
+    {% empty %}
+        <p>Пока нет фотографий.</p>
+    {% endfor %}
 </div>
 
-<div class="pagination">
-  {% if photos.has_previous %}
-    <a href="?page={{ photos.previous_page_number }}">Prev</a>
-  {% endif %}
-  <span>Стр. {{ photos.number }} / {{ photos.paginator.num_pages }}</span>
-  {% if photos.has_next %}
-    <a href="?page={{ photos.next_page_number }}">Next</a>
-  {% endif %}
-</div>
+{% if is_paginated %}
+    <div class="pagination">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; первая</a>
+                <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+            {% endif %}
+
+            <span class="current">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">следующая</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+{% endif %}
 {% endblock %}
